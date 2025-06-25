@@ -17,6 +17,9 @@ require __DIR__ . '/../vendor/autoload.php';
     $socketServer->bind( '127.0.0.1' );
     $socketServer->listen();
     $socketServer->getSockName( $stAddr, $uPort );
+    /** @phpstan-ignore-next-line */
+    assert( is_string( $stAddr ) );
+    assert( is_int( $uPort ) );
 
     $socketClient = JSocket::create( AF_INET, SOCK_STREAM, SOL_TCP );
     $socketClient->connect( $stAddr, $uPort );

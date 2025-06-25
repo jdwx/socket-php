@@ -14,7 +14,7 @@ use JDWX\Socket\Exceptions\WriteException;
 use LogicException;
 
 
-class Socket {
+class Socket implements SocketInterface {
 
 
     final protected function __construct( protected \Socket $socket ) {}
@@ -61,10 +61,11 @@ class Socket {
 
 
     /** @suppress PhanTypeMismatchArgumentNullableInternal Phan doesn't know socket_clear_error() takes null since 8.0. */
-    public static function clearError( \Socket|Socket|null $socket = null ) : void {
+    public static function clearError( \Socket|SocketInterface|null $socket = null ) : void {
         if ( $socket instanceof Socket ) {
             $socket = $socket->socket();
         }
+        assert( $socket instanceof \Socket || $socket === null );
         socket_clear_error( $socket );
     }
 
@@ -126,18 +127,19 @@ class Socket {
 
 
     /** @suppress PhanTypeMismatchArgumentNullableInternal Phan doesn't know socket_last_error() takes null since 8.0. */
-    public static function lastError( \Socket|Socket|null $socket = null ) : int {
+    public static function lastError( \Socket|SocketInterface|null $socket = null ) : int {
         if ( $socket instanceof Socket ) {
             $socket = $socket->socket();
         }
+        assert( $socket instanceof \Socket || $socket === null );
         return socket_last_error( $socket );
     }
 
 
     /**
-     * @param list<\Socket|Socket>|null $io_read
-     * @param list<\Socket|Socket>|null $io_write
-     * @param list<\Socket|Socket>|null $io_except
+     * @param list<\Socket|SocketInterface>|null $io_read
+     * @param list<\Socket|SocketInterface>|null $io_write
+     * @param list<\Socket|SocketInterface>|null $io_except
      * @param int $i_uSeconds
      * @param int $i_uMicroSeconds
      * @return int
@@ -150,6 +152,7 @@ class Socket {
             if ( $sock instanceof Socket ) {
                 $sock = $sock->socket();
             }
+            assert( $sock instanceof \Socket );
             $read[] = $sock;
         }
 
@@ -158,6 +161,7 @@ class Socket {
             if ( $sock instanceof Socket ) {
                 $sock = $sock->socket();
             }
+            assert( $sock instanceof \Socket );
             $write[] = $sock;
         }
 
@@ -166,6 +170,7 @@ class Socket {
             if ( $sock instanceof Socket ) {
                 $sock = $sock->socket();
             }
+            assert( $sock instanceof \Socket );
             $except[] = $sock;
         }
 
@@ -191,9 +196,9 @@ class Socket {
 
 
     /**
-     * @param list<\Socket|Socket>|null $i_rInArray
+     * @param list<\Socket|SocketInterface>|null $i_rInArray
      * @param array<\Socket> $i_rOutArray
-     * @return list<\Socket|Socket>|null
+     * @return list<\Socket|SocketInterface>|null
      */
     private static function processArray( ?array $i_rInArray, array $i_rOutArray ) : ?array {
         if ( ! is_array( $i_rInArray ) ) {
@@ -341,8 +346,7 @@ class Socket {
      * @throws ReadException
      */
     public function recvFrom( ?string &$o_stData, int $i_uLength, int $i_uFlags = 0, string &$o_stAddress = '',
-                              ?int    &$o_nuPort = null,
-    ) : int {
+                              ?int    &$o_nuPort = null ) : int {
         $fu = @socket_recvfrom( $this->socket, $o_stData, $i_uLength, $i_uFlags, $o_stAddress, $o_nuPort );
         if ( is_int( $fu ) ) {
             return $fu;
@@ -474,9 +478,6 @@ class Socket {
         }
         throw new WriteException( $this->socket, "Socket::write( {$i_stData}, {$i_nuLen} ) failed" );
     }
-
-
-    // socket_wsaprotocol_info... Sorry, I don't do Windows. (And hence can't test this.)
 
 
 }
