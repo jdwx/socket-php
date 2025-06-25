@@ -188,6 +188,14 @@ final class SocketTest extends TestCase {
     }
 
 
+    public function testSelectForRead() : void {
+        [ $sock1, $sock2 ] = JSocket::createPair();
+        self::assertFalse( $sock1->selectForRead() );
+        $sock2->write( 'Hello' );
+        self::assertTrue( $sock1->selectForRead( 1 ) ); // Wait for 1 second (but it won't)
+    }
+
+
     /** @return list<SocketInterface> */
     private function createInetPair() : array {
         $server = JSocket::create( AF_INET, SOCK_STREAM, SOL_TCP );

@@ -386,6 +386,21 @@ class Socket implements SocketInterface {
     }
 
 
+    public function selectForRead( int $i_uTimeoutSeconds = 0, int $i_uTimeoutMicroSeconds = 0 ) : bool {
+        $read = [ $this->socket ];
+        $write = null;
+        $except = null;
+        $rc = @socket_select( $read, $write, $except, $i_uTimeoutSeconds, $i_uTimeoutMicroSeconds );
+        if ( is_int( $rc ) ) {
+            if ( $rc > 0 && count( $read ) > 0 ) {
+                return true;
+            }
+            return false;
+        }
+        throw new Exception( null, "Socket::selectForRead( {$i_uTimeoutSeconds}, {$i_uTimeoutMicroSeconds} ) failed" );
+    }
+
+
     public function send( string $i_stData, ?int $i_nuLen = null, int $i_uFlags = 0 ) : int {
         $i_nuLen ??= strlen( $i_stData );
         $fu = socket_send( $this->socket, $i_stData, $i_nuLen, $i_uFlags );
