@@ -205,6 +205,7 @@ final class SocketTest extends TestCase {
         $st = str_repeat( 'Whatever', 8192 );
         self::assertNotEquals( strlen( $st ), $sock1->write( $st ) );
         self::assertFalse( $sock1->selectForWrite() );
+        unset( $sock2 );
     }
 
 
