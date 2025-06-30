@@ -89,6 +89,57 @@ final class SocketTest extends TestCase {
     }
 
 
+    public function testCreateByAddressForIPv4() : void {
+        $sockFar = JSocket::create( AF_INET, SOCK_STREAM, SOL_TCP );
+        $sockFar->bind( '127.0.0.1' );
+        $sockFar->listen();
+        $uPort = $sockFar->localPort();
+
+        $sock = JSocket::createByAddress( '127.0.0.1', SOCK_STREAM, SOL_TCP );
+        $sock->connect( '127.0.0.1', $uPort );
+        $sock->send( 'Hello' );
+
+        $sock2 = $sockFar->accept();
+
+        self::assertSame( 'Hello', $sock2->read( 1024 ) );
+    }
+
+
+    public function testCreateByAddressForIPv6() : void {
+        $sockFar = JSocket::create( AF_INET6, SOCK_STREAM, SOL_TCP );
+        $sockFar->bind( '::1' );
+        $sockFar->listen();
+        $uPort = $sockFar->localPort();
+
+        $sock = JSocket::createByAddress( '::1', SOCK_STREAM, SOL_TCP );
+        $sock->connect( '::1', $uPort );
+        $sock->send( 'Hello' );
+
+        $sock2 = $sockFar->accept();
+
+        self::assertSame( 'Hello', $sock2->read( 1024 ) );
+    }
+
+
+    public function testCreateByAddressForUnix() : void {
+        $sockFar = JSocket::create( AF_UNIX, SOCK_STREAM );
+        $stSocketPath = sys_get_temp_dir() . '/sock-test.' . random_int( 1_000_000, 9_999_999 ) . '.sock';
+        self::assertFileDoesNotExist( $stSocketPath, 'Socket path should not exist before binding' );
+        $sockFar->bind( $stSocketPath );
+        $sockFar->listen();
+
+        $sock = JSocket::createByAddress( $stSocketPath, SOCK_STREAM );
+        $sock->connect( $stSocketPath );
+        $sock->send( 'Hello' );
+
+        $sock2 = $sockFar->accept();
+
+        self::assertSame( 'Hello', $sock2->read( 1024 ) );
+
+        unlink( $stSocketPath );
+    }
+
+
     public function testCreateListen() : void {
         $socket = JSocket::createListen( 0 );
         $socket->getSockName( $stAddress, $uPort );

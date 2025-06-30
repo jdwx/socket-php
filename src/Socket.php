@@ -88,6 +88,17 @@ class Socket implements SocketInterface {
     }
 
 
+    public static function createByAddress( string $i_stAddress, int $i_uType, int $i_uProtocol = 0 ) : static {
+        $uDomain = AF_INET;
+        if ( str_contains( $i_stAddress, ':' ) ) {
+            $uDomain = AF_INET6;
+        } elseif ( str_starts_with( $i_stAddress, '/' ) ) {
+            $uDomain = AF_UNIX;
+        }
+        return self::create( $uDomain, $i_uType, $i_uProtocol );
+    }
+
+
     public static function createListen( int $i_uPort, int $i_uBacklog = SOMAXCONN ) : static {
         $sock = @socket_create_listen( $i_uPort, $i_uBacklog );
         if ( $sock instanceof \Socket ) {
