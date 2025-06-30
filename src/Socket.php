@@ -401,6 +401,21 @@ class Socket implements SocketInterface {
     }
 
 
+    public function selectForWrite( int $i_uTimeoutSeconds = 0, int $i_uTimeoutMicroSeconds = 0 ) : bool {
+        $read = null;
+        $write = [ $this->socket ];
+        $except = null;
+        $rc = @socket_select( $read, $write, $except, $i_uTimeoutSeconds, $i_uTimeoutMicroSeconds );
+        if ( is_int( $rc ) ) {
+            if ( $rc > 0 && count( $write ) > 0 ) {
+                return true;
+            }
+            return false;
+        }
+        throw new Exception( null, "Socket::selectForWrite( {$i_uTimeoutSeconds}, {$i_uTimeoutMicroSeconds} ) failed" );
+    }
+
+
     public function send( string $i_stData, ?int $i_nuLen = null, int $i_uFlags = 0 ) : int {
         $i_nuLen ??= strlen( $i_stData );
         $fu = socket_send( $this->socket, $i_stData, $i_nuLen, $i_uFlags );
