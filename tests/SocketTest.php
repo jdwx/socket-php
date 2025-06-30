@@ -36,6 +36,8 @@ final class SocketTest extends TestCase {
         $client->send( '!', i_uFlags: MSG_OOB );
         $client->send( 'Hello' );
         $accepted->recv( $st, 100 );
+        usleep( 10_000 );
+        # Regrettably, this test is somewhat unreliable.
         self::assertTrue( $accepted->atMark() );
         $accepted->recv( $st, 100, i_uFlags: MSG_OOB );
     }
@@ -193,6 +195,16 @@ final class SocketTest extends TestCase {
         self::assertFalse( $sock1->selectForRead() );
         $sock2->write( 'Hello' );
         self::assertTrue( $sock1->selectForRead( 1 ) ); // Wait for 1 second (but it won't)
+    }
+
+
+    public function testSelectForWrite() : void {
+        [ $sock1, $sock2 ] = JSocket::createPair();
+        self::assertTrue( $sock1->selectForWrite() );
+        $sock1->setNonBlock();
+        $st = str_repeat( 'Whatever', 8192 );
+        self::assertNotEquals( strlen( $st ), $sock1->write( $st ) );
+        self::assertFalse( $sock1->selectForWrite() );
     }
 
 
