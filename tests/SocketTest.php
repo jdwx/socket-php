@@ -89,6 +89,27 @@ final class SocketTest extends TestCase {
     }
 
 
+    public function testCreateBoundForTcp() : void {
+        $sock = JSocket::createBound( '127.0.0.1' );
+
+        $sock2 = JSocket::create( AF_INET, SOCK_STREAM, SOL_TCP );
+        $sock2->connect( '127.0.0.1', $sock->localPort() );
+
+        $sock2->send( 'Hello' );
+        $sock3 = $sock->accept();
+        self::assertSame( 'Hello', $sock3->read( 1024 ) );
+    }
+
+
+    public function testCreateBoundForUdp() : void {
+        $sock = JSocket::createBound( '127.0.0.1', 0, SOCK_DGRAM, SOL_UDP );
+        $sock2 = JSocket::create( AF_INET, SOCK_DGRAM, SOL_UDP );
+        $sock2->sendTo( 'Hello', null, '127.0.0.1', $sock->localPort() );
+        self::assertSame( 5, $sock->recv( $st, 1024 ) );
+        self::assertSame( 'Hello', $st );
+    }
+
+
     public function testCreateByAddressForIPv4() : void {
         $sockFar = JSocket::create( AF_INET, SOCK_STREAM, SOL_TCP );
         $sockFar->bind( '127.0.0.1' );

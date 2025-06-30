@@ -88,6 +88,17 @@ class Socket implements SocketInterface {
     }
 
 
+    public static function createBound( string $i_stAddress, int $i_uPort = 0, int $i_uType = SOCK_STREAM,
+                                        int    $i_uProtocol = 0 ) : static {
+        $sock = self::createByAddress( $i_stAddress, $i_uType, $i_uProtocol );
+        $sock->bind( $i_stAddress, $i_uPort );
+        if ( $i_uType === SOCK_STREAM ) {
+            $sock->listen();
+        }
+        return $sock;
+    }
+
+
     public static function createByAddress( string $i_stAddress, int $i_uType, int $i_uProtocol = 0 ) : static {
         $uDomain = AF_INET;
         if ( str_contains( $i_stAddress, ':' ) ) {
