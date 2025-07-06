@@ -253,6 +253,19 @@ final class SocketTest extends TestCase {
     }
 
 
+    public function testRecvTimed() : void {
+        [ $sock1, $sock2 ] = JSocket::createPair();
+        $sock1->send( 'Hello' );
+        $st = '';
+        self::assertSame( 5, $sock2->recvTimed( $st, 5 ) );
+        self::assertSame( 'Hello', $st );
+        /** @noinspection PhpUnitAssertTrueWithIncompatibleTypeArgumentInspection */
+        $sock1->send( 'World' );
+        self::assertSame( 5, $sock2->recvTimed( $st, 10 ) );
+        self::assertSame( 'World', $st );
+    }
+
+
     public function testRemoteName() : void {
         [ $accepted, $client ] = $this->createInetPair();
         self::assertSame( $accepted->remoteAddress(), $client->localAddress() );
