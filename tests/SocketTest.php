@@ -238,6 +238,21 @@ final class SocketTest extends TestCase {
     }
 
 
+    public function testRecvMsgForIOVec() : void {
+        [ $sock1, $sock2 ] = JSocket::createPair();
+        $sock1->send( 'FooBarBaz' );
+        $r = [
+            'name' => [],
+            'buffer_size' => 1024,
+            'controllen' => socket_cmsg_space( IPPROTO_IPV6, IPV6_PKTINFO ) +
+                socket_cmsg_space( IPPROTO_IPV6, IPV6_TCLASS ),
+        ];
+        self::assertSame( 9, $sock2->recvMsg( $r ) );
+        assert( is_array( $r[ 'iov' ] ) );
+        self::assertSame( 'FooBarBaz', $r[ 'iov' ][ 0 ] );
+    }
+
+
     public function testRemoteName() : void {
         [ $accepted, $client ] = $this->createInetPair();
         self::assertSame( $accepted->remoteAddress(), $client->localAddress() );
@@ -292,6 +307,15 @@ final class SocketTest extends TestCase {
         self::assertNotEquals( strlen( $st ), $sock1->write( $st ) );
         self::assertFalse( $sock1->selectForWrite() );
         unset( $sock2 );
+    }
+
+
+    public function testSendMsgForIOVec() : void {
+        [ $sock1, $sock2 ] = JSocket::createPair();
+        $sock1->sendMsg( [
+            'iov' => [ 'Foo', 'Bar', 'Baz' ],
+        ] );
+        self::assertSame( 'FooBarBaz', $sock2->read( 1024 ) );
     }
 
 

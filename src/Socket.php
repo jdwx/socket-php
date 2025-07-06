@@ -404,7 +404,19 @@ class Socket implements SocketInterface {
         if ( is_int( $fu ) ) {
             return $fu;
         }
-        throw new ReadException( $this->socket, "Socket::recvMsg( \$o_rMessage, {$i_uFlags} ) failed" );
+        throw new ReadException(
+            $this->socket,
+            "Socket::recvMsg( \$o_rMessage, {$i_uFlags} ) failed"
+        );
+    }
+
+
+    public function recvTimed( ?string &$o_stData, int $i_uLength, int $i_uTimeoutSeconds = 0,
+                               int     $i_uTimeoutMicroSeconds = 0, int $i_uFlags = 0 ) : int {
+        if ( ! $this->selectForRead( $i_uTimeoutSeconds, $i_uTimeoutMicroSeconds ) ) {
+            return 0;
+        }
+        return $this->recv( $o_stData, $i_uLength, $i_uFlags );
     }
 
 
@@ -477,6 +489,15 @@ class Socket implements SocketInterface {
         }
         $i_rMessage = serialize( $i_rMessage );
         throw new WriteException( $this->socket, "Socket::sendMsg( {$i_rMessage}, {$i_uFlags} ) failed" );
+    }
+
+
+    public function sendTimed( string $i_stData, ?int $i_nuLen = null, int $i_uTimeoutSeconds = 0,
+                               int    $i_uTimeoutMicroSeconds = 0, int $i_uFlags = 0 ) : int {
+        if ( ! $this->selectForWrite( $i_uTimeoutSeconds, $i_uTimeoutMicroSeconds ) ) {
+            return 0;
+        }
+        return $this->send( $i_stData, $i_nuLen, $i_uFlags );
     }
 
 
