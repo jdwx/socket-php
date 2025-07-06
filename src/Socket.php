@@ -339,12 +339,29 @@ class Socket implements SocketInterface {
     }
 
 
-    public function read( int $i_uLength, int $i_uMode = PHP_BINARY_READ ) : string {
-        $bst = @socket_read( $this->socket, $i_uLength, $i_uMode );
+    public function read( int $i_uMaxLength, int $i_uMode = PHP_BINARY_READ ) : string {
+        $bst = @socket_read( $this->socket, $i_uMaxLength, $i_uMode );
         if ( is_string( $bst ) ) {
             return $bst;
         }
-        throw new ReadException( $this->socket, "Socket::read( {$i_uLength}, {$i_uMode} ) failed" );
+        throw new ReadException( $this->socket, "Socket::read( {$i_uMaxLength}, {$i_uMode} ) failed" );
+    }
+
+
+    /** @param-out bool $o_bComplete */
+    public function readTimed( int   $i_uExactLength, int $i_uTimeoutSeconds = 0,
+                               int   $i_uTimeoutMicroSeconds = 0, int $i_uMode = PHP_BINARY_READ,
+                               ?bool &$o_bComplete = null ) : string {
+        $st = '';
+        $o_bComplete = false;
+        while ( strlen( $st ) < $i_uExactLength ) {
+            if ( ! $this->selectForRead( $i_uTimeoutSeconds, $i_uTimeoutMicroSeconds ) ) {
+                return $st;
+            }
+            $st .= $this->read( $i_uExactLength - strlen( $st ), $i_uMode );
+        }
+        $o_bComplete = true;
+        return $st;
     }
 
 

@@ -120,7 +120,13 @@ interface SocketInterface {
     public function localPort() : int;
 
 
-    public function read( int $i_uLength, int $i_uMode = PHP_BINARY_READ ) : string;
+    public function read( int $i_uMaxLength, int $i_uMode = PHP_BINARY_READ ) : string;
+
+
+    /** @param-out bool $o_bComplete */
+    public function readTimed( int   $i_uExactLength, int $i_uTimeoutSeconds = 0,
+                               int   $i_uTimeoutMicroSeconds = 0, int $i_uMode = PHP_BINARY_READ,
+                               ?bool &$o_bComplete = null ) : string;
 
 
     public function recv( ?string &$o_stData, int $i_uLength, int $i_uFlags = 0 ) : int;

@@ -224,6 +224,20 @@ final class SocketTest extends TestCase {
     }
 
 
+    public function testReadTimed() : void {
+        [ $sock1, $sock2 ] = JSocket::createPair();
+        $sock1->send( 'Hello' );
+        $b = null;
+        self::assertSame( 'Hello', $sock2->readTimed( 5, 1, o_bComplete: $b ) );
+        /** @noinspection PhpUnitAssertTrueWithIncompatibleTypeArgumentInspection */
+        self::assertTrue( $b );
+        $sock1->send( 'World' );
+        self::assertSame( 'World', $sock2->readTimed( 10, 0,
+            10_000, o_bComplete: $b ) );
+        self::assertFalse( $b );
+    }
+
+
     public function testRemoteName() : void {
         [ $accepted, $client ] = $this->createInetPair();
         self::assertSame( $accepted->remoteAddress(), $client->localAddress() );
