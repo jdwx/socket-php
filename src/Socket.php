@@ -62,7 +62,7 @@ class Socket implements SocketInterface {
 
     /** @suppress PhanTypeMismatchArgumentNullableInternal Phan doesn't know socket_clear_error() takes null since 8.0. */
     public static function clearError( \Socket|SocketInterface|null $socket = null ) : void {
-        if ( $socket instanceof Socket ) {
+        if ( $socket instanceof self ) {
             $socket = $socket->socket();
         }
         assert( $socket instanceof \Socket || $socket === null );
@@ -150,7 +150,7 @@ class Socket implements SocketInterface {
 
     /** @suppress PhanTypeMismatchArgumentNullableInternal Phan doesn't know socket_last_error() takes null since 8.0. */
     public static function lastError( \Socket|SocketInterface|null $socket = null ) : int {
-        if ( $socket instanceof Socket ) {
+        if ( $socket instanceof self ) {
             $socket = $socket->socket();
         }
         assert( $socket instanceof \Socket || $socket === null );
@@ -171,7 +171,7 @@ class Socket implements SocketInterface {
                                    int    $i_uSeconds = 0, int $i_uMicroSeconds = 0 ) : int {
         $read = [];
         foreach ( $io_read ?? [] as $sock ) {
-            if ( $sock instanceof Socket ) {
+            if ( $sock instanceof self ) {
                 $sock = $sock->socket();
             }
             assert( $sock instanceof \Socket );
@@ -180,7 +180,7 @@ class Socket implements SocketInterface {
 
         $write = [];
         foreach ( $io_write ?? [] as $sock ) {
-            if ( $sock instanceof Socket ) {
+            if ( $sock instanceof self ) {
                 $sock = $sock->socket();
             }
             assert( $sock instanceof \Socket );
@@ -189,7 +189,7 @@ class Socket implements SocketInterface {
 
         $except = [];
         foreach ( $io_except ?? [] as $sock ) {
-            if ( $sock instanceof Socket ) {
+            if ( $sock instanceof self ) {
                 $sock = $sock->socket();
             }
             assert( $sock instanceof \Socket );
@@ -443,10 +443,7 @@ class Socket implements SocketInterface {
         $except = null;
         $rc = @socket_select( $read, $write, $except, $i_uTimeoutSeconds, $i_uTimeoutMicroSeconds );
         if ( is_int( $rc ) ) {
-            if ( $rc > 0 && count( $read ) > 0 ) {
-                return true;
-            }
-            return false;
+            return $rc > 0 && count( $read ) > 0;
         }
         throw new Exception( null, "Socket::selectForRead( {$i_uTimeoutSeconds}, {$i_uTimeoutMicroSeconds} ) failed" );
     }
@@ -458,10 +455,7 @@ class Socket implements SocketInterface {
         $except = null;
         $rc = @socket_select( $read, $write, $except, $i_uTimeoutSeconds, $i_uTimeoutMicroSeconds );
         if ( is_int( $rc ) ) {
-            if ( $rc > 0 && count( $write ) > 0 ) {
-                return true;
-            }
-            return false;
+            return $rc > 0 && count( $write ) > 0;
         }
         throw new Exception( null, "Socket::selectForWrite( {$i_uTimeoutSeconds}, {$i_uTimeoutMicroSeconds} ) failed" );
     }
@@ -487,8 +481,8 @@ class Socket implements SocketInterface {
         if ( is_int( $fu ) ) {
             return $fu;
         }
-        $i_rMessage = serialize( $i_rMessage );
-        throw new WriteException( $this->socket, "Socket::sendMsg( {$i_rMessage}, {$i_uFlags} ) failed" );
+        $stMessage = serialize( $i_rMessage );
+        throw new WriteException( $this->socket, "Socket::sendMsg( {$stMessage}, {$i_uFlags} ) failed" );
     }
 
 
